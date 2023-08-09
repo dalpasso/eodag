@@ -24,6 +24,7 @@ import shutil
 import tarfile
 import tempfile
 import zipfile
+from copy import copy
 from datetime import datetime, timedelta
 from time import sleep
 from typing import (
@@ -44,6 +45,7 @@ from eodag.utils import (
     DEFAULT_DOWNLOAD_WAIT,
     ProgressCallback,
     StreamResponse,
+    deepcopy,
     sanitize,
     uri_to_path,
 )
@@ -57,6 +59,7 @@ from eodag.utils.notebook import NotebookWidgets
 if TYPE_CHECKING:
     from requests.auth import AuthBase
 
+    from eodag.api.core import EODataAccessGateway
     from eodag.api.product import EOProduct
     from eodag.api.search_result import SearchResult
     from eodag.config import PluginConfig
@@ -469,6 +472,7 @@ class Download(PluginTopic):
     def download_all(
         self,
         products: SearchResult,
+        dag: EODataAccessGateway,
         auth: Optional[Union[AuthBase, Dict[str, str]]] = None,
         downloaded_callback: Optional[DownloadedCallback] = None,
         progress_callback: Optional[ProgressCallback] = None,
@@ -484,6 +488,8 @@ class Download(PluginTopic):
 
         :param products: Products to download
         :type products: :class:`~eodag.api.search_result.SearchResult`
+        :param dag: The gateway to download products
+        :type dag: :class:`~eodag.api.core.EODataAccessGateway`
         :param auth: (optional) authenticated object
         :type auth: Optional[Union[AuthBase, Dict[str, str]]]
         :param downloaded_callback: (optional) A method or a callable object which takes
@@ -500,16 +506,59 @@ class Download(PluginTopic):
         :param timeout: (optional) If download fails, maximum time in minutes before stop retrying
                         to download
         :type timeout: int
-        :param kwargs: `outputs_prefix` (str), `extract` (bool), `delete_archive` (bool)
-                        and `dl_url_params` (dict) can be provided as additional kwargs
-                        and will override any other values defined in a configuration
-                        file or with environment variables.
+        :param kwargs: `outputs_prefix` (str), `extract` (bool), `delete_archive` (bool),
+                        `dl_url_params` (dict) and `exhaust` (bool) can be provided as
+                        additional kwargs and will override any other values defined in a
+                        configuration file or with environment variables.
         :type kwargs: Union[str, bool, dict]
         :returns: List of absolute paths to the downloaded products in the local
             filesystem (e.g. ``['/tmp/product.zip']`` on Linux or
             ``['C:\\Users\\username\\AppData\\Local\\Temp\\product.zip']`` on Windows)
         :rtype: list
         """
+        if kwargs.pop("exhaust", False):
+            logger.info(
+                (
+                    "Searching other products from all pages with the same search request "
+                    "as the one used for these products to download all of them"
+                )
+            )
+            search_kwargs = products.search_kwargs
+            if search_kwargs:
+                other_products = copy(products)
+                other_products.clear()
+                other_products.search_kwargs = None
+                other_products.crunchers = []
+                tmp_search_kwargs = deepcopy(search_kwargs)
+                # remove parameters not used in the following search method
+                if tmp_search_kwargs.get("page", False):
+                    del tmp_search_kwargs["page"]
+                if tmp_search_kwargs.get("raise_errors", False):
+                    del tmp_search_kwargs["raise_errors"]
+                # we can not import ~eodag.api.search_result.SearchResult because of a circular import,
+                # then we initialize other products by copying and clearing initial products
+                for page_results in dag.search_iter_page(
+                    items_per_page=tmp_search_kwargs.pop("items_per_page", None),
+                    start=tmp_search_kwargs.pop("startTimeFromAscendingNode", None),
+                    end=tmp_search_kwargs.pop("completionTimeFromAscendingNode", None),
+                    geom=tmp_search_kwargs.pop("geometry", None),
+                    locations=tmp_search_kwargs.pop("locations", None),
+                    **tmp_search_kwargs,
+                ):
+                    other_products.data.extend(page_results.data)
+                logger.info("Found %s other result(s)", len(other_products))
+                # apply the same crunchers than the one used to filter initial results
+                if other_products:
+                    for cruncher in products.crunchers:
+                        other_products = other_products.crunch(
+                            cruncher, **search_kwargs
+                        )
+                    products.data.extend(other_products.data)
+            else:
+                logger.info(
+                    "Products from all pages have already been searched, then the 'exhaust' parameter is not used here"
+                )
+            logger.info("Downloading %s products", len(products))
         # Products are going to be removed one by one from this sequence once
         # downloaded.
         products = products[:]
