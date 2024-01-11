@@ -58,6 +58,7 @@ from eodag.rest.core import (
     get_stac_conformance,
     get_stac_extension_oseo,
     search_stac_items,
+    telemetry_init,
 )
 from eodag.rest.types.eodag_search import EODAGSearch
 from eodag.rest.types.queryables import QueryablesGetParams
@@ -877,3 +878,4 @@ async def post_search(request: Request) -> ORJSONResponse:
 
 
 app.include_router(router)
+telemetry_init(app)
