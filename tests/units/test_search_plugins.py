@@ -621,6 +621,7 @@ class TestSearchPluginQueryStringSearch(BaseSearchPluginTest):
             timeout=5,
         )
 
+        self.assertEqual(10, len(queryables))
         # queryables from provider constraints file are added (here the ones of ERA5_SL_MONTHLY for wekeo)
         for provider_queryable in provider_queryables_from_constraints_file:
             provider_queryable = (
@@ -2075,6 +2076,7 @@ class TestSearchPluginBuildSearchResult(unittest.TestCase):
             timeout=5,
         )
 
+        self.assertEqual(11, len(queryables))
         # queryables from provider constraints file are added (here the ones of CAMS_EU_AIR_QUALITY_RE for cop_ads)
         for provider_queryable in provider_queryables_from_constraints_file:
             provider_queryable = (
@@ -2114,6 +2116,16 @@ class TestSearchPluginBuildSearchResult(unittest.TestCase):
             self.assertSetEqual(
                 set(variable_constraints), set(queryable.__origin__.__args__)
             )
+
+        # check that fixed params have been removed from queryables if necessary
+        for param in getattr(
+            self.search_plugin.config, "remove_from_queryables", {}
+        ).get("shared_queryables", []):
+            self.assertNotIn(param, queryables)
+        for param in getattr(
+            self.search_plugin.config, "remove_from_queryables", {}
+        ).get("CAMS_EU_AIR_QUALITY_RE", []):
+            self.assertNotIn(param, queryables)
 
         # reset mock
         mock_requests_session_constraints.reset_mock()
@@ -2141,6 +2153,16 @@ class TestSearchPluginBuildSearchResult(unittest.TestCase):
             self.assertEqual("a", queryable.__metadata__[0].get_default())
             self.assertFalse(queryable.__metadata__[0].is_required())
 
+        # check that fixed params have been removed from queryables if necessary
+        for param in getattr(
+            self.search_plugin.config, "remove_from_queryables", {}
+        ).get("shared_queryables", []):
+            self.assertNotIn(param, queryables)
+        for param in getattr(
+            self.search_plugin.config, "remove_from_queryables", {}
+        ).get("CAMS_EU_AIR_QUALITY_RE", []):
+            self.assertNotIn(param, queryables)
+
     def test_plugins_search_buildsearchresult_discover_queryables_with_local_constraints_file(
         self,
     ):
@@ -2166,6 +2188,7 @@ class TestSearchPluginBuildSearchResult(unittest.TestCase):
         )
         self.assertIsNotNone(queryables)
 
+        self.assertEqual(9, len(queryables))
         # queryables from provider constraints file are added (here the ones of CAMS_EU_AIR_QUALITY_RE for cop_ads)
         for provider_queryable in provider_queryables_from_constraints_file:
             provider_queryable = (
@@ -2219,6 +2242,16 @@ class TestSearchPluginBuildSearchResult(unittest.TestCase):
         if queryable is not None:
             self.assertEqual("a", queryable.__metadata__[0].get_default())
             self.assertFalse(queryable.__metadata__[0].is_required())
+
+        # check that fixed params have been removed from queryables if necessary
+        for param in getattr(
+            self.search_plugin.config, "remove_from_queryables", {}
+        ).get("shared_queryables", []):
+            self.assertNotIn(param, queryables)
+        for param in getattr(
+            self.search_plugin.config, "remove_from_queryables", {}
+        ).get("CAMS_EU_AIR_QUALITY_RE", []):
+            self.assertNotIn(param, queryables)
 
         # restore configuration
         self.search_plugin.config.constraints_file_url = tmp_search_constraints_file_url
