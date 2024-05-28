@@ -63,7 +63,6 @@ from eodag.rest.types.eodag_search import EODAGSearch
 from eodag.rest.types.queryables import QueryablesGetParams
 from eodag.rest.types.stac_search import SearchPostRequest, sortby2list
 from eodag.rest.utils import format_pydantic_error, str2json, str2list
-from eodag.rest.utils.telemetry import telemetry_init
 from eodag.utils import parse_header, update_nested_dict
 from eodag.utils.exceptions import (
     AuthenticationError,
@@ -878,4 +877,3 @@ async def post_search(request: Request) -> ORJSONResponse:
 
 
 app.include_router(router)
-telemetry_init(app)
