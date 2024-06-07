@@ -524,7 +524,8 @@ class Download(PluginTopic):
                     "as the one used for these products to download all of them"
                 )
             )
-            search_kwargs = products.search_kwargs
+            # record search kwargs of products in the dag to skip their search page during the new search with all pages
+            search_kwargs = dag.search_kwargs_for_exhaust = products.search_kwargs
             if search_kwargs:
                 other_products = SearchResult([])
                 tmp_search_kwargs = deepcopy(search_kwargs)
@@ -544,6 +545,8 @@ class Download(PluginTopic):
                     **tmp_search_kwargs,
                 ):
                     other_products.data.extend(page_results.data)
+                # the dag does not need search kwargs record anymore
+                dag.search_kwargs_for_exhaust = None
                 logger.info("Found %s other result(s)", len(other_products))
                 # apply the same crunchers than the one used to filter initial results
                 if other_products:
