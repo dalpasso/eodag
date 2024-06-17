@@ -6199,7 +6199,7 @@
         outputs_extension: .grib
 
 ---
-!provider  # wekeo_cmems
+!provider  # MARK: wekeo_cmems
   name: wekeo_cmems
   priority: 0
   roles:
