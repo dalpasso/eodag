@@ -42,13 +42,15 @@ class SearchResult(UserList):
     """An object representing a collection of :class:`~eodag.api.product._product.EOProduct` resulting from a search.
 
     :param products: A list of products resulting from a search
-    :type products: list(:class:`~eodag.api.product._product.EOProduct`)
+    :type products: List[EOProduct]
     :param number_matched: (optional) the estimated total number of matching results
     :type number_matched: Optional[int]
+    :ivar data: The actual list of products resulting from the search
+    :vartype data: List[EOProduct]
     :ivar search_kwargs: The search kwargs used by eodag to search for the product
     :vartype search_kwargs: Any
     :ivar crunchers: The list of crunchers used to filter these products
-    :vartype crunchers: list(tuple(subclass of :class:`~eodag.plugins.crunch.base.Crunch`, dict))
+    :vartype crunchers: List[Crunch]
     """
 
     data: List[EOProduct]
@@ -58,8 +60,15 @@ class SearchResult(UserList):
     ) -> None:
         super(SearchResult, self).__init__(products)
         self.number_matched = number_matched
+        self.search_kwargs: Optional[Dict[str, Any]] = None
+        self.crunchers: List[Crunch] = []
+
+    def clear(self) -> None:
+        """Clear search result"""
+        super().clear()
+        self.number_matched = None
         self.search_kwargs = None
-        self.crunchers = []
+        self.crunchers.clear()
 
     def crunch(self, cruncher: Crunch, **search_params: Any) -> SearchResult:
         """Do some crunching with the underlying EO products.
