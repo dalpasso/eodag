@@ -47,8 +47,8 @@ class SearchResult(UserList):
     :type number_matched: Optional[int]
     :ivar data: The actual list of products resulting from the search
     :vartype data: List[EOProduct]
-    :ivar search_kwargs: The search kwargs used by eodag to search for the product
-    :vartype search_kwargs: Any
+    :ivar search_kwargs: (optional) The search kwargs used by eodag to search for the product
+    :vartype search_kwargs: Optional[Dict[str, Any]]
     :ivar crunchers: The list of crunchers used to filter these products
     :vartype crunchers: List[Crunch]
     """
