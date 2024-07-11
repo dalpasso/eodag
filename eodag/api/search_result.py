@@ -210,6 +210,7 @@ class SearchResult(UserList):
             )
             + "</table>"
         )
+
     def extend(self, other: Iterable) -> None:
         """override extend method to include errors"""
         if isinstance(other, SearchResult):
