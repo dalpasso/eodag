@@ -247,7 +247,7 @@ class AwsDownload(Download):
         SAFE-build is configured for a given provider and product type.
         If the product title is configured to be updated during download and
         SAFE-formatted, its destination path will be:
-        `{outputs_prefix}/{title}`
+        `{output_dir}/{title}`
 
         :param product: The EO product to download
         :type product: :class:`~eodag.api.product._product.EOProduct`
@@ -259,7 +259,7 @@ class AwsDownload(Download):
                                   creation and update to give the user a
                                   feedback on the download progress
         :type progress_callback: :class:`~eodag.utils.ProgressCallback` or None
-        :param kwargs: `outputs_prefix` (str), `extract` (bool), `delete_archive` (bool)
+        :param kwargs: `output_dir` (str), `extract` (bool), `delete_archive` (bool)
                         and `dl_url_params` (dict) can be provided as additional kwargs
                         and will override any other values defined in a configuration
                         file or with environment variables.
@@ -677,7 +677,7 @@ class AwsDownload(Download):
         :param timeout: (optional) If download fails, maximum time in minutes before stop retrying
                         to download
         :type timeout: int
-        :param kwargs: `outputs_prefix` (str), `extract` (bool), `delete_archive` (bool)
+        :param kwargs: `output_dir` (str), `extract` (bool), `delete_archive` (bool)
                         and `dl_url_params` (dict) can be provided as additional kwargs
                         and will override any other values defined in a configuration
                         file or with environment variables.

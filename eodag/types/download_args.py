@@ -23,7 +23,7 @@ from typing import Dict, Optional, TypedDict
 class DownloadConf(TypedDict, total=False):
     """Download configuration"""
 
-    outputs_prefix: str
+    output_dir: str
     outputs_extension: str
     extract: bool
     dl_url_params: Dict[str, str]

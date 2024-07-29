@@ -731,7 +731,7 @@ Miscellaneous
 - Adds functionality to search products by their ID
 - Exposes search products by ID functionality on REST interface
 - Exposes get quicklook functionality on REST interface
-- Fixes a bug occuring when ``outputs_prefix`` config parameter is not set in user config
+- Fixes a bug occuring when ``output_dir`` config parameter is not set in user config
 
 0.7.2 (2019-03-26)
 ++++++++++++++++++
