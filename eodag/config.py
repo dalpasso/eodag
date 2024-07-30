@@ -68,7 +68,7 @@ from eodag.utils.exceptions import ValidationError
 logger = logging.getLogger("eodag.config")
 
 EXT_PRODUCT_TYPES_CONF_URI = (
-    "https://cs-si.github.io/eodag/eodag/resources/ext_product_types.json"
+    "https://dalpasso.github.io/eodag/eodag/resources/ext_product_types.json"
 )
 
 
